@@ -27,10 +27,10 @@ Regular map apps assume everyone can take the stairs. For wheelchair users, a si
 | --- | --- | --- |
 | Frontend | Next.js + TypeScript | Website and app |
 | Styling | Tailwind CSS | Neon design and accessibility modes |
-| Maps | React Leaflet + OpenStreetMap | Interactive campus map |
+| Maps | MapLibre GL + OpenStreetMap (OpenFreeMap tiles) | Interactive 3D campus map |
 | Routing | Dijkstra's algorithm | Find accessible paths |
 | Database | Supabase | Store obstacles, routes, reports |
-| AI | OpenAI API | Understand natural-language reports |
+| AI | NVIDIA Nemotron or OpenAI | Beau's reasoning and tool calling |
 | Messaging | Photon 2.0 | Send and receive iMessages |
 | Hosting | Vercel | Publish the website |
 | Version control | Git + GitHub | Share code with the team |
@@ -49,12 +49,21 @@ Regular map apps assume everyone can take the stairs. For wheelchair users, a si
 2. `npm install`
 3. Copy `.env.example` to `.env.local` and add your Supabase keys (optional: demo data works without them)
 4. `npm run dev`, then open http://localhost:3000
-5. For the database, run `supabase/schema.sql` in the Supabase SQL editor
+5. For the database, run `supabase/schema.sql` in the Supabase SQL editor (see `docs/SUPABASE_SETUP.md`)
+
+### Run Beau (iMessage)
+Beau lives in `agent/` and shares the website's campus map, router and Supabase tables, so a report texted to Beau appears on the map live.
+1. In `.env.local`, also set `SUPABASE_SERVICE_ROLE_KEY`, a model key (`NVIDIA_API_KEY` or `OPENAI_API_KEY`) and your Photon keys
+2. `npm run imessage:beta` (Photon 2.0 beta API) or `npm run imessage` (Photon Spectrum)
+3. Test without a phone: `npm run beau -- "route from the union to jsom"`
+
+Details: `agent/README.md`
 
 ## 🌿 Branches
 - `main`: stable, demo-ready code
+- `integration`: website + Beau combined, on one shared database (merge this into `main`)
 - `frontend`: Next.js app (UI, map, routing)
-- `backend`: Photon 2.0 + OpenAI messaging agent
+- `backend`: original Photon 2.0 messaging agent (now moved into `agent/` on `integration`)
 
 ## 🗺️ What's next
 - Live GPS turn-by-turn navigation

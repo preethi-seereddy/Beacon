@@ -1,0 +1,40 @@
+{
+  "name": "beacon",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Beacon — accessible campus navigation (HackUTD 2026)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p agent",
+    "beau": "tsx --env-file-if-exists=.env.local agent/dev.ts",
+    "imessage": "tsx --env-file-if-exists=.env.local agent/spectrum.ts",
+    "imessage:beta": "tsx --env-file-if-exists=.env.local agent/photon.ts",
+    "beau:check": "tsx --env-file-if-exists=.env.local agent/check.ts",
+    "beau:chat": "tsx --env-file-if-exists=.env.local agent/chat.ts"
+  },
+  "dependencies": {
+    "@photon-ai/api": "^0.5.0",
+    "@supabase/supabase-js": "^2.45.4",
+    "maplibre-gl": "^4.7.1",
+    "next": "14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "spectrum-ts": "^12.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.10",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.15",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
