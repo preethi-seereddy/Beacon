@@ -1,126 +1,72 @@
 # Beacon ✨
+**A brighter way forward.**
 
-**A brighter way forward.** Accessible campus navigation for wheelchair users and people with mobility limitations. HackUTD 2026.
+Beacon is an AI-powered accessibility navigation app for wheelchair users and people with mobility limitations. It finds the fastest *accessible* route across campus, routes around reported obstacles, and lets the community report and verify accessibility issues in real time.
 
-Beacon finds the fastest *accessible* route across campus, avoids obstacles the community has reported, and lets anyone report or verify issues. Beau the firefly is the AI companion, available over iMessage through Photon 2.0.
+Meet **Beau**, our firefly guide. Text Beau on iMessage to get accessible directions or report an obstacle in plain words.
 
-## Stack
+Built at **HackUTD 2026**.
 
-| Part | Technology |
-| --- | --- |
-| Frontend | Next.js 14 (App Router) + TypeScript |
-| Styling | Tailwind CSS + a small set of component classes in `src/app/globals.css` |
-| Maps | React Leaflet + OpenStreetMap |
-| Routing | Dijkstra's algorithm (`src/lib/routing.ts`) |
-| Database | Supabase (`supabase/schema.sql`) |
-| AI / Messaging | OpenAI + Photon 2.0, on the backend. This repo is the frontend. |
-| Hosting | Vercel |
+---
 
-## Run it
+## 💡 The problem
+Regular map apps assume everyone can take the stairs. For wheelchair users, a single broken elevator, a blocked ramp, or a stepped entrance can turn a 5-minute trip into a 30-minute detour, and that information is usually out of date or missing.
 
-```bash
-npm install
-cp .env.example .env.local   # optional — see below
-npm run dev                  # http://localhost:3000
-```
+## 🌟 Features
+- **Accessible routing**: step-free, avoid stairs, avoid elevators, or prefer ramps
+- **Live obstacle avoidance**: confirmed reports block a path and Beacon reroutes automatically
+- **Honest routes**: every route shows how many segments are verified, and unverified paths are never shown as guaranteed accessible
+- **Community reporting**: report broken elevators, blocked ramps, construction and more in about 20 seconds
+- **Community verification**: confirm or dispute reports (Unverified, Confirmed, Disputed, Resolved)
+- **Beau on iMessage**: directions and reports by text, powered by Photon 2.0 + OpenAI
+- **3D campus map**: neon tilted view, with a 2D mode for panning
+- **Accessibility first**: Clarity Mode, adjustable text size, extra-large tap targets, reduced motion
 
-The app works without any keys. If the Supabase variables are empty, reports are stored in the browser (localStorage) and seeded with demo reports.
+## 🛠️ Tech stack
+| Part | Technology | Purpose |
+| --- | --- | --- |
+| Frontend | Next.js + TypeScript | Website and app |
+| Styling | Tailwind CSS | Neon design and accessibility modes |
+| Maps | React Leaflet + OpenStreetMap | Interactive campus map |
+| Routing | Dijkstra's algorithm | Find accessible paths |
+| Database | Supabase | Store obstacles, routes, reports |
+| AI | OpenAI API | Understand natural-language reports |
+| Messaging | Photon 2.0 | Send and receive iMessages |
+| Hosting | Vercel | Publish the website |
+| Version control | Git + GitHub | Share code with the team |
 
-### Connect Supabase
+## ⚙️ How it works
+1. The campus is modeled as a graph of walkways, entrances, ramps, elevators and stairs.
+2. Each path costs its length, adjusted by your preferences and by community reports:
+   - Confirmed obstacle: blocked
+   - Unverified obstacle: avoided when possible
+   - Disputed obstacle: small penalty
+3. Dijkstra's algorithm finds the best route, and a second pass finds an alternative.
+4. Reports from the app and from Beau go into the same Supabase tables, so everyone sees the same map.
 
-1. Create a Supabase project.
-2. Run `supabase/schema.sql` in the SQL editor. It creates the `reports` and `report_votes` tables, the `reports_with_counts` view, and the `report-photos` storage bucket.
-3. Put the project URL and anon key in `.env.local`:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=...
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-   ```
+## 🚀 Getting started
+1. `git clone` this repo and `cd` into it
+2. `npm install`
+3. Copy `.env.example` to `.env.local` and add your Supabase keys (optional: demo data works without them)
+4. `npm run dev`, then open http://localhost:3000
+5. For the database, run `supabase/schema.sql` in the Supabase SQL editor
 
-The Photon/Beau backend should write to the same tables (`source = 'beau'`). That way, a report texted to Beau appears on the map. It should also set `edge_id`, using the same nearest-walkway logic as `nearestEdge()` in `src/lib/routing.ts`.
+## 🌿 Branches
+- `main`: stable, demo-ready code
+- `frontend`: Next.js app (UI, map, routing)
+- `backend`: Photon 2.0 + OpenAI messaging agent
 
-### Connect Beau
+## 🗺️ What's next
+- Live GPS turn-by-turn navigation
+- True 3D buildings with MapLibre GL
+- Indoor routing across floors and elevators
+- Expanding beyond UTD to more campuses and cities
 
-Set `NEXT_PUBLIC_BEAU_IMESSAGE` to the phone number or email your Photon agent answers on. The "Message Beau" button opens Messages with "hi Beau" pre-filled.
+## 👥 Team
+- Aanya Kochhar
+- Preethi Seereddy
+- Ishwarya Mekala
+- Sreehaasika Katuru 
 
-## Deploy (Vercel)
-
-1. Push to GitHub.
-2. Import the repo in Vercel.
-3. Add the same environment variables.
-4. Deploy. No other config needed.
-
-## ⚠️ Before the demo: fix the campus coordinates
-
-`src/lib/campus.ts` holds the walkway graph: junctions, entrances and edges flagged for stairs, ramps and elevators, plus building footprints. The coordinates are **approximate placeholders around UT Dallas**, not surveyed data.
-
-To fix them:
-
-1. Open `/map?debug=1`. This forces the 2D view.
-2. Tap a real entrance or path corner. The coordinates are copied to your clipboard.
-3. Paste them into `campus.ts`.
-
-Routing, directions, the "obstacles avoided" logic, and report snapping all update automatically.
-
-## How routing works
-
-- Every walkway edge costs its length in meters.
-- If the user wants step-free or no stairs, stair edges are impassable.
-- Avoiding elevators multiplies elevator edges by 5. Preferring ramps multiplies ramp edges by 0.8. Unverified edges cost 1.25×.
-- Community reports change the cost of the edge they sit on:
-  - Confirmed: blocked.
-  - Unverified: 4×, so it's avoided when a reasonable alternative exists.
-  - Disputed: 1.6×.
-  - Resolved: no effect.
-- The alternative route is a second Dijkstra run with the recommended route's edges penalized 3×.
-- The app never calls a route "accessible" without showing how many of its segments are verified.
-
-Report status rules are in `src/lib/status.ts`.
-
-## The 3D map
-
-Leaflet is a 2D library, so the 3D look comes from two tricks:
-
-- A CSS perspective tilt on the map.
-- Buildings drawn as stacks of slightly offset polygons, which looks like extrusion.
-
-While tilted, dragging is turned off because Leaflet's pointer math doesn't account for the transform. Markers stay tappable. The cube button on the map, or Settings → 3D map, switches to 2D for free panning.
-
-For true 3D buildings later, swap `CampusMap.tsx` for MapLibre GL with OSM vector tiles.
-
-## Nav animations
-
-Each tab animates when tapped (in `BottomNav.tsx` and `globals.css`):
-
-- **Home**: the house glows for a second.
-- **Map**: the path dots light up one by one, then the destination pin lights up.
-- **Report**: the lightbulb flashes on.
-- **Profile**: Beau's wings flutter.
-
-The animations are skipped when Reduce Motion or Clarity Mode is on, or when the device's reduced-motion setting is on.
-
-## Accessibility
-
-- Clarity Mode: high contrast, no glow, no animation.
-- Adjustable text size.
-- Extra-large tap targets.
-- High-contrast map.
-- Status is always shown with an icon plus a text label, never color alone.
-- Real buttons, links and labels throughout.
-
-All of these settings are saved per device.
-
-## Project layout
-
-```
-src/
-  app/                 pages: / search map route report reports/[id] community
-                       profile profile/preferences beau settings
-  components/          BottomNav, CampusMap (Leaflet), MapView, Beau, Skyline, Icon, ui
-  lib/
-    campus.ts          walkway graph + buildings (edit coordinates here)
-    routing.ts         Dijkstra, alternatives, directions, nearest edge/node
-    data.ts            reports API (Supabase or local demo store)
-    settings.tsx       preferences, display settings, favorites, recents, location
-    status.ts          report status rules + labels
-supabase/schema.sql    database schema
-```
+---
+*Made with 💚 at HackUTD 2026*
